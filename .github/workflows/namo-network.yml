@@ -1,0 +1,21 @@
+name: Namo Cognitive Network Sync
+on:
+  schedule:
+    - cron: "0 */3 * * *"  # sync ทุก 3 ชม.
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run distributed sync
+        run: |
+          python - << 'PY'
+          import asyncio, json
+          from core.distributed_sync import DistributedSync
+          async def main():
+              s = DistributedSync(["https://namo-node2.run.app"])
+              await s.broadcast({"msg":"Auto sync from Namo Genesis"})
+          asyncio.run(main())
+          PY

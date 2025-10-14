@@ -1,0 +1,30 @@
+image: gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
+
+stages: [build, deploy]
+
+variables:
+  PROJECT_ID: $PROJECT_ID
+  REGION: $REGION
+  SERVICE: "namo-genesis"
+  IMAGE: "gcr.io/$PROJECT_ID/$SERVICE:latest"
+
+before_script:
+  - echo "$GCLOUD_SERVICE_KEY" | gcloud auth activate-service-account --key-file=-
+  - gcloud config set project "$PROJECT_ID"
+  - gcloud config set run/region "$REGION"
+
+build:
+  stage: build
+  script:
+    - gcloud builds submit --tag "$IMAGE"
+
+deploy:
+  stage: deploy
+  script:
+    - gcloud run deploy "$SERVICE" \
+        --image "$IMAGE" \
+        --region "$REGION" \
+        --allow-unauthenticated \
+        --set-env-vars MODEL_NAME="namo-stub"
+  only:
+    - main
