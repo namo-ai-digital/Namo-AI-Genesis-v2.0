@@ -1,14 +1,16 @@
 class EthicalEngine:
     def __init__(self):
-        # In a real implementation, this would involve complex ethical frameworks
-        pass
+        # A simple list of keywords that might indicate unethical actions
+        self.unethical_keywords = ["harm", "deceive", "exploit", "manipulate", "steal"]
 
     def evaluate_action(self, action):
         """
-        Evaluates the ethical implications of a given action.
+        Evaluates the ethical implications of a given action by checking for keywords.
         """
-        # Placeholder for ethical evaluation logic
-        # For now, assumes all actions are ethical
+        action_lower = action.lower()
+        for keyword in self.unethical_keywords:
+            if keyword in action_lower:
+                return False, f"Action contains unethical keyword: '{keyword}'."
         return True, "This action is considered ethical."
 
 if __name__ == '__main__':
