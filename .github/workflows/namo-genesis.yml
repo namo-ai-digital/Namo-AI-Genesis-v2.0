@@ -1,0 +1,81 @@
+name: Namo Genesis — Build, Test & Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          project_id: ${{ secrets.PROJECT_ID }}
+
+      - name: Configure gcloud
+        run: |
+          gcloud config set project ${{ secrets.PROJECT_ID }}
+          gcloud config set run/region ${{ secrets.REGION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        run: |
+          python - <<'PY'
+          import importlib
+          from api.server import app
+          mods = [
+              "core.emotional_mirror",
+              "core.memory_nexus",
+              "core.ethical_engine",
+              "core.reasoning_core",
+              "core.namo_ai"
+          ]
+          for m in mods:
+              importlib.import_module(m)
+          assert app is not None
+          print("✅ Modules importable and FastAPI app exists")
+          PY
+
+      - name: Build container image
+        run: |
+          gcloud builds submit --tag gcr.io/${{ secrets.PROJECT_ID }}/namo-genesis:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy namo-genesis \
+            --image gcr.io/${{ secrets.PROJECT_ID }}/namo-genesis:latest \
+            --region ${{ secrets.REGION }} \
+            --allow-unauthenticated \
+            --set-env-vars MODEL_NAME="namo-stub"
+
+      - name: Run distributed sync
+        run: |
+          python - <<'PY'
+          import asyncio, json
+          from core.distributed_sync import DistributedSync
+
+          async def main():
+              s = DistributedSync(["https://namo-node2.run.app"])
+              await s.broadcast({"msg": "Auto sync from Namo Genesis"})
+              print("✅ Distributed sync broadcast complete.")
+
+          asyncio.run(main())
+          PY
