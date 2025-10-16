@@ -22,26 +22,26 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Run smoke + FastAPI tests
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
-
-      - name: Smoke test - import modules
-        run: |
-          python - << 'PY'
+          python - <<'PY'
           import importlib
-          mods = ["core.emotional_mirror","core.memory_nexus","core.ethical_engine","core.reasoning_core","core.namo_ai"]
+          from api.server import app
+
+          mods = [
+              "core.emotional_mirror",
+              "core.memory_nexus",
+              "core.ethical_engine",
+              "core.reasoning_core",
+              "core.namo_ai"
+          ]
           for m in mods:
               importlib.import_module(m)
-          print("OK: modules importable")
-          PY
 
-      - name: FastAPI starts check
-        run: |
-          python - << 'PY'
-          from api.server import app
-          assert app is not None
-          print("OK: FastAPI app exists")
+          assert app is not None, "FastAPI app not found!"
+          print("✅ All core modules imported successfully")
+          print("✅ FastAPI app exists and is importable")
           PY
