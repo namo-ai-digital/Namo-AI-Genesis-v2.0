@@ -3,6 +3,7 @@ on:
   schedule:
     - cron: "0 */3 * * *"  # sync ทุก 3 ชม.
   workflow_dispatch:
+
 jobs:
   sync:
     runs-on: ubuntu-latest
