@@ -19,6 +19,8 @@ class NamoAI:
 
         # 2. Retrieve relevant memories
         last_interaction = self.memory_nexus.retrieve_memory(user_id, "last_interaction")
+        if last_interaction is None:
+            last_interaction = "This is our first interaction."
 
         # 3. Reason about the user's input
         problem = f"User input: '{user_input}', Last interaction: '{last_interaction}'"
