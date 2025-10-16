@@ -1,30 +1,48 @@
-import unittest
-import sys
-import os
+name: Namo Genesis — Deploy Cloud Run
 
-# Add the parent directory to the Python path to allow importing from 'core'
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from core.ethical_engine import EthicalEngine
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - "Dockerfile"
+      - "api/**"
+      - "core/**"
+      - ".github/workflows/deploy-cloudrun.yml"
 
-class TestEthicalEngine(unittest.TestCase):
-    def setUp(self):
-        self.engine = EthicalEngine()
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      REGION: ${{ secrets.GCP_REGION }}
+      SERVICE: "namo-genesis"
+      IMAGE: "gcr.io/${{ secrets.GCP_PROJECT_ID }}/namo-genesis:latest"
+    steps:
+      - uses: actions/checkout@v4
 
-    def test_unethical_action_is_identified(self):
-        """
-        Tests that an action with unethical keywords is identified as unethical.
-        """
-        unethical_action = "Cause harm to a user."
-        is_ethical, _ = self.engine.evaluate_action(unethical_action)
-        self.assertFalse(is_ethical, "The action should be identified as unethical.")
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          export_default_credentials: true
 
-    def test_ethical_action_is_identified(self):
-        """
-        Tests that a benign action is correctly identified as ethical.
-        """
-        ethical_action = "Provide a helpful and compassionate response."
-        is_ethical, _ = self.engine.evaluate_action(ethical_action)
-        self.assertTrue(is_ethical, "The action should be identified as ethical.")
+      - name: Build & Push Container
+        run: |
+          gcloud builds submit --tag "$IMAGE"
 
-if __name__ == '__main__':
-    unittest.main()
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --allow-unauthenticated \
+            --set-env-vars MODEL_NAME="namo-stub"
+
+      - name: Print URL
+        run: |
+          gcloud run services describe "$SERVICE" --region "$REGION" --format='value(status.url)'
