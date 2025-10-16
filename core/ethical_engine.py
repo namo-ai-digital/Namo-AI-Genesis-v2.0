@@ -1,3 +1,5 @@
+import re
+
 class EthicalEngine:
     def __init__(self):
         # A simple list of keywords that might indicate unethical actions
@@ -9,7 +11,7 @@ class EthicalEngine:
         """
         action_lower = action.lower()
         for keyword in self.unethical_keywords:
-            if keyword in action_lower:
+            if re.search(r'\b' + re.escape(keyword) + r'\b', action_lower):
                 return False, f"Action contains unethical keyword: '{keyword}'."
         return True, "This action is considered ethical."
 
