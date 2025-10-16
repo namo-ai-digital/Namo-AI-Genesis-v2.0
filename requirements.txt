@@ -3,5 +3,4 @@ uvicorn
 numpy
 pydantic
 gunicorn
-aiohttp
 aiohttp>=3.9.0
