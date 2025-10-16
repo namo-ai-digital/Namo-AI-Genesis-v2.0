@@ -32,6 +32,7 @@ class TestNamoAI(unittest.TestCase):
         mock_reasoning_core.reason.assert_called_once_with(
             "User input: 'Hello, this is my first time here.', Last interaction: 'This is our first interaction.'"
         )
+        mock_memory_nexus.store_memory.assert_called_once_with(user_id, "last_interaction", user_input)
 
 if __name__ == '__main__':
     unittest.main()
