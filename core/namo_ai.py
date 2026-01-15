@@ -21,8 +21,7 @@ class NamoAI:
         last_interaction = self.memory_nexus.retrieve_memory(user_id, "last_interaction")
 
         # 3. Reason about the user's input
-        problem = f"User input: '{user_input}', Last interaction: '{last_interaction}'"
-        solution = self.reasoning_core.reason(problem)
+        solution = self.reasoning_core.reason(user_input, context=last_interaction)
 
         # 4. Generate an empathetic and ethical response
         empathetic_response = self.emotional_mirror.generate_empathetic_response(sentiment)
