@@ -3,10 +3,11 @@ from typing import List, Dict
 class CollectiveMemory:
     def __init__(self):
         self.cluster_knowledge = []
+        self.seen_inputs = set()
 
     async def aggregate(self, memories: List[Dict]):
-        self.cluster_knowledge.extend(memories)
-        # รวมและตัดซ้ำ
-        seen = set()
-        self.cluster_knowledge = [m for m in self.cluster_knowledge if not (m['input'] in seen or seen.add(m['input']))]
+        for m in memories:
+            if m['input'] not in self.seen_inputs:
+                self.seen_inputs.add(m['input'])
+                self.cluster_knowledge.append(m)
         return len(self.cluster_knowledge)
