@@ -1,11 +1,18 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pydantic import BaseModel
 from core.namo_ai import NamoAI
 from core.distributed_sync import DistributedSync
 
-app = FastAPI()
 namo_ai = NamoAI()
 syncer = DistributedSync(peers=["https://namo-node2.run.app"])
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    await syncer.close()
+
+app = FastAPI(lifespan=lifespan)
 
 class UserInput(BaseModel):
     user_id: str

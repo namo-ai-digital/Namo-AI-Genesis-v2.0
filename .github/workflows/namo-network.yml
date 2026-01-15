@@ -17,5 +17,6 @@ jobs:
           async def main():
               s = DistributedSync(["https://namo-node2.run.app"])
               await s.broadcast({"msg":"Auto sync from Namo Genesis"})
+              await s.close()
           asyncio.run(main())
           PY
