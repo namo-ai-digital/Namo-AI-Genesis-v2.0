@@ -1,4 +1,4 @@
-import numpy as np
+from textblob import TextBlob
 
 class EmotionalMirror:
     def __init__(self):
@@ -8,10 +8,13 @@ class EmotionalMirror:
     def analyze_sentiment(self, text):
         """
         Analyzes the sentiment of a given text.
+        Returns a polarity score between -1.0 and 1.0.
         """
-        # Placeholder for sentiment analysis logic
-        # For now, returns a random sentiment score
-        return np.random.uniform(-1, 1)
+        if not text:
+            return 0.0
+
+        blob = TextBlob(text)
+        return blob.sentiment.polarity
 
     def generate_empathetic_response(self, sentiment_score):
         """
