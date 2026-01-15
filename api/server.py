@@ -5,7 +5,11 @@ from core.distributed_sync import DistributedSync
 
 app = FastAPI()
 namo_ai = NamoAI()
-syncer = DistributedSync(peers=["https://namo-node2.run.app"])
+syncer = DistributedSync(
+    peers=["https://namo-node2.run.app"],
+    memory_nexus=namo_ai.memory_nexus,
+    ethical_engine=namo_ai.ethical_engine
+)
 
 class UserInput(BaseModel):
     user_id: str
@@ -18,7 +22,8 @@ def interact(user_input: UserInput):
 
 @app.post("/namo/sync")
 async def sync(data: dict):
-    return {"status": "ok", "received": data}
+    result = await syncer.receive(data)
+    return {"status": "ok", "received": data, "processed_result": result}
 
 @app.post("/namo/broadcast")
 async def broadcast(data: dict):
